@@ -18,7 +18,7 @@
 
     <!-- โค้ดแอปพลิเคชันของคุณ -->
     <script type="text/babel" data-type="module">
-        // นำเข้า Firebase Modules (ตัด Auth ออกเพื่อให้ใช้งานบนไฟล์ Local ได้ลื่นไหล)
+        // นำเข้า Firebase Modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot, addDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -167,6 +167,7 @@
                 }, (error) => {
                     console.error("Firestore sync error:", error);
                     // ถ้าระบบขึ้นว่ายังไม่ได้ตั้งค่า Rule ให้ถูกต้อง จะโชว์ Error ตรงนี้
+                    alert('⚠️ ไม่สามารถดึงข้อมูลจาก Firebase ได้!\n\nกรุณาตรวจสอบว่าได้เปลี่ยนกฎ Rules เป็น "allow read, write: if true;" แล้วกด Publish ครับ');
                 });
 
                 return () => unsubscribe();
@@ -286,17 +287,20 @@
                         });
                         showCopyMessage('บันทึกข้อมูลใหม่ลง Cloud เรียบร้อยแล้ว');
                     }
+                    
+                    // หากสำเร็จ ค่อยล้างฟอร์ม
+                    setFormData({
+                        ...initialFormState,
+                        date: formData.date 
+                    });
+                    setActiveTab('active');
+
                 } catch (error) {
                     console.error("Error saving document:", error);
-                    showCopyMessage('เกิดข้อผิดพลาดในการบันทึก: ตรวจสอบ Rule ใน Firestore');
+                    // แจ้งเตือนแบบชัดเจนถ้าบันทึกไม่สำเร็จ (เช่นติด Rules)
+                    alert('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล!\n\nกรุณาตรวจสอบว่าคุณได้ตั้งค่า Rules ใน Firebase เป็น "allow read, write: if true;" แล้วกด Publish หรือยังครับ\n\n(หากเพิ่งกด Publish อาจจะต้องรอระบบของ Firebase อัปเดตประมาณ 1 นาที)');
+                    showCopyMessage('บันทึกข้อมูลไม่สำเร็จ');
                 }
-                
-                setFormData({
-                ...initialFormState,
-                date: formData.date 
-                });
-                
-                setActiveTab('active');
             };
 
             const handleEdit = (booking) => {
@@ -348,6 +352,7 @@
                     await updateDoc(docRef, { isCleared: !booking.isCleared });
                 } catch (error) {
                     console.error("Error updating document:", error);
+                    alert("เกิดข้อผิดพลาดในการอัปเดตสถานะงานครับ");
                 }
             };
 
