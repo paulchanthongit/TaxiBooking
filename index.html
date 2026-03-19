@@ -18,15 +18,14 @@
 
     <!-- โค้ดแอปพลิเคชันของคุณ -->
     <script type="text/babel" data-type="module">
-        // นำเข้า Firebase Modules
+        // นำเข้า Firebase Modules (ตัด Auth ออกเพื่อให้ใช้งานบนไฟล์ Local ได้ลื่นไหล)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, addDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const { useState, useEffect } = React;
 
         // ==========================================
-        // ⚠️ โค้ดเชื่อมต่อ Firebase ของคุณ ⚠️
+        // โค้ดเชื่อมต่อ Firebase ของคุณ
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyBSBHOqk-tDSMt5bHWnWrA3W1teJ128VQM",
@@ -39,7 +38,6 @@
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
 
         // ==========================================
@@ -145,7 +143,6 @@
         // App Component หลัก
         // ==========================================
         function App() {
-            const [user, setUser] = useState(null);
             const [isDbConnected, setIsDbConnected] = useState(false);
             const [bookings, setBookings] = useState([]);
             const [activeTab, setActiveTab] = useState('active'); 
@@ -153,32 +150,11 @@
             const [editingId, setEditingId] = useState(null); 
 
             // ==============================================
-            // Firebase Authentication & Database Sync
+            // ดึงข้อมูลจาก Database อัตโนมัติทันที
             // ==============================================
             useEffect(() => {
-                const initAuth = async () => {
-                    if (!auth) return;
-                    try {
-                        // ล็อกอินแบบ Anonymous เลย
-                        await signInAnonymously(auth);
-                    } catch (error) {
-                        console.error("Auth Error:", error);
-                    }
-                };
-                initAuth();
-
-                if (auth) {
-                    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-                        setUser(currentUser);
-                    });
-                    return () => unsubscribe();
-                }
-            }, []);
-
-            useEffect(() => {
-                if (!user || !db) return;
+                if (!db) return;
                 
-                // ดึงข้อมูลจาก Collection ชื่อ 'taxi_bookings'
                 const bookingsRef = collection(db, 'taxi_bookings');
                 
                 const unsubscribe = onSnapshot(bookingsRef, (snapshot) => {
@@ -190,10 +166,11 @@
                     setIsDbConnected(true);
                 }, (error) => {
                     console.error("Firestore sync error:", error);
+                    // ถ้าระบบขึ้นว่ายังไม่ได้ตั้งค่า Rule ให้ถูกต้อง จะโชว์ Error ตรงนี้
                 });
 
                 return () => unsubscribe();
-            }, [user]);
+            }, []);
 
             // ==============================================
 
@@ -260,8 +237,8 @@
             const handleSubmit = async (e) => {
                 e.preventDefault();
                 
-                if (!user || !db) {
-                    showCopyMessage('กรุณารอระบบเชื่อมต่อฐานข้อมูลสักครู่...');
+                if (!db) {
+                    showCopyMessage('กำลังโหลดฐานข้อมูล...');
                     return;
                 }
 
@@ -364,7 +341,7 @@
             };
 
             const toggleClearStatus = async (booking) => {
-                if (!user || !db) return;
+                if (!db) return;
                 try {
                     // อัปเดตสถานะเคลียร์บน Cloud ทันที
                     const docRef = doc(db, 'taxi_bookings', booking.id);
