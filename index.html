@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบจัดการจองแท็กซี่ ภูเก็ต</title>
+    <link rel="icon" href="https://img1.pic.in.th/images/Gemini_Generated_Image_k7ezqkk7ezqkk7ez.png" type="image/png" />
+    <link rel="apple-touch-icon" href="https://img1.pic.in.th/images/Gemini_Generated_Image_k7ezqkk7ezqkk7ez.png" />
     <!-- ดึง Tailwind CSS มาใช้สำหรับตกแต่งความสวยงาม -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- ดึง React และ ReactDOM มาใช้งาน -->
@@ -25,7 +27,7 @@
         const { useState, useEffect } = React;
 
         // ==========================================
-        // โค้ดเชื่อมต่อ Firebase ของคุณ
+        // ⚠️ โค้ดเชื่อมต่อ Firebase ของคุณ ⚠️
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyBSBHOqk-tDSMt5bHWnWrA3W1teJ128VQM",
@@ -60,6 +62,7 @@
         const Clock = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
         const Edit = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>;
         const Cloud = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>;
+        const ArrowRight = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>;
 
         // ==========================================
         // ข้อมูลหลักของระบบ
@@ -166,7 +169,6 @@
                     setIsDbConnected(true);
                 }, (error) => {
                     console.error("Firestore sync error:", error);
-                    // ถ้าระบบขึ้นว่ายังไม่ได้ตั้งค่า Rule ให้ถูกต้อง จะโชว์ Error ตรงนี้
                     alert('⚠️ ไม่สามารถดึงข้อมูลจาก Firebase ได้!\n\nกรุณาตรวจสอบว่าได้เปลี่ยนกฎ Rules เป็น "allow read, write: if true;" แล้วกด Publish ครับ');
                 });
 
@@ -272,13 +274,11 @@
 
                 try {
                     if (editingId) {
-                        // บันทึกการแก้ไขลง Cloud
                         const docRef = doc(db, 'taxi_bookings', editingId);
                         await updateDoc(docRef, bookingDataToSave);
                         setEditingId(null);
                         showCopyMessage('อัปเดตข้อมูลบน Cloud เรียบร้อยแล้ว');
                     } else {
-                        // บันทึกข้อมูลใหม่ลง Cloud
                         const bookingsRef = collection(db, 'taxi_bookings');
                         await addDoc(bookingsRef, {
                             ...bookingDataToSave,
@@ -288,7 +288,6 @@
                         showCopyMessage('บันทึกข้อมูลใหม่ลง Cloud เรียบร้อยแล้ว');
                     }
                     
-                    // หากสำเร็จ ค่อยล้างฟอร์ม
                     setFormData({
                         ...initialFormState,
                         date: formData.date 
@@ -297,8 +296,7 @@
 
                 } catch (error) {
                     console.error("Error saving document:", error);
-                    // แจ้งเตือนแบบชัดเจนถ้าบันทึกไม่สำเร็จ (เช่นติด Rules)
-                    alert('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล!\n\nกรุณาตรวจสอบว่าคุณได้ตั้งค่า Rules ใน Firebase เป็น "allow read, write: if true;" แล้วกด Publish หรือยังครับ\n\n(หากเพิ่งกด Publish อาจจะต้องรอระบบของ Firebase อัปเดตประมาณ 1 นาที)');
+                    alert('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล!\n\nกรุณาตรวจสอบว่าคุณได้ตั้งค่า Rules ใน Firebase เป็น "allow read, write: if true;" แล้วกด Publish หรือยังครับ');
                     showCopyMessage('บันทึกข้อมูลไม่สำเร็จ');
                 }
             };
@@ -307,7 +305,6 @@
                 const isStandardPickup = BASE_LOCATIONS.includes(booking.pickup) || recentLocations.includes(booking.pickup);
                 const isStandardDropoff = BASE_LOCATIONS.includes(booking.dropoff) || recentLocations.includes(booking.dropoff);
                 
-                // แปลงเวลา 24h แตกกลับไปเป็น Hour, Minute, AMPM เพื่อโชว์ในฟอร์ม
                 let editHour = '';
                 let editMinute = '';
                 let editAMPM = 'AM';
@@ -347,7 +344,6 @@
             const toggleClearStatus = async (booking) => {
                 if (!db) return;
                 try {
-                    // อัปเดตสถานะเคลียร์บน Cloud ทันที
                     const docRef = doc(db, 'taxi_bookings', booking.id);
                     await updateDoc(docRef, { isCleared: !booking.isCleared });
                 } catch (error) {
@@ -426,7 +422,7 @@
                 <header className="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10">
                     <div className="max-w-4xl mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                        <Car className="h-6 w-6" />
+                        <img src="https://img1.pic.in.th/images/Gemini_Generated_Image_k7ezqkk7ezqkk7ez.png" alt="App Logo" className="h-9 w-9 rounded-lg object-cover shadow-sm bg-white p-0.5" />
                         <h1 className="text-xl font-bold tracking-wide">ระบบจัดการจองแท็กซี่</h1>
                     </div>
                     <div className="flex items-center gap-3">
@@ -761,8 +757,8 @@
                         </div>
                     )}
 
-                    {/* Booking Cards List */}
-                    <div className="space-y-4 pb-10">
+                    {/* Booking Cards List (แบบ Compact ใหม่) */}
+                    <div className="space-y-3 pb-10">
                         {!isDbConnected ? (
                             <div className="bg-white rounded-xl border border-dashed border-gray-300 p-10 flex flex-col items-center justify-center text-gray-400">
                                 <Cloud className="h-12 w-12 mb-3 text-blue-300 animate-bounce" />
@@ -775,92 +771,91 @@
                             </div>
                         ) : (
                         currentDisplayBookings.map((booking, index) => (
-                            <div key={booking.id} className={`bg-white rounded-xl shadow-sm border-l-4 p-4 relative transition-all ${editingId === booking.id ? 'border-l-amber-500 ring-1 ring-amber-300 bg-amber-50' : booking.isCleared ? 'border-l-gray-400 opacity-75' : 'border-l-blue-500 hover:shadow-md'}`}>
+                            <div key={booking.id} className={`bg-white rounded-xl shadow-sm border-l-4 p-3 relative transition-all ${editingId === booking.id ? 'border-l-amber-500 ring-1 ring-amber-300 bg-amber-50' : booking.isCleared ? 'border-l-gray-400 opacity-75' : 'border-l-blue-500 hover:shadow-md'}`}>
                             
-                            {/* Card Header */}
-                            <div className="flex justify-between items-start mb-3 border-b border-gray-100 pb-3">
-                                <div>
-                                <span className={`inline-block text-xs px-2 py-1 rounded font-medium mb-1 ${editingId === booking.id ? 'bg-amber-200 text-amber-800' : 'bg-blue-100 text-blue-800'}`}>
-                                    {editingId === booking.id ? 'กำลังแก้ไข...' : `งานที่ ${activeTab === 'active' ? index + 1 : '-'}`}
-                                </span>
-                                <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
-                                    {booking.customerName}
-                                    <span className="text-sm font-normal text-gray-500">({booking.pax} ท่าน)</span>
-                                </h3>
-                                <div className="flex items-center gap-3 text-sm text-gray-600 mt-1">
-                                    <span className="flex items-center gap-1 font-medium text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
+                            {/* 1. Header Row (ชื่อลูกค้า, ปุ่มแอคชั่น) */}
+                            <div className="flex justify-between items-start mb-2">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className={`inline-block text-xs px-2 py-0.5 rounded font-medium ${editingId === booking.id ? 'bg-amber-200 text-amber-800' : 'bg-blue-100 text-blue-800'}`}>
+                                        {editingId === booking.id ? 'กำลังแก้ไข...' : `งานที่ ${activeTab === 'active' ? index + 1 : '-'}`}
+                                    </span>
+                                    <h3 className="font-bold text-base text-gray-800 flex items-center gap-1">
+                                        {booking.customerName}
+                                        <span className="text-xs font-normal text-gray-500">({booking.pax} ท่าน)</span>
+                                    </h3>
+                                </div>
+
+                                <div className="flex items-center gap-1">
+                                    <button 
+                                        onClick={() => handleEdit(booking)} 
+                                        className={`p-1.5 rounded-md transition-colors ${editingId === booking.id ? 'bg-amber-200 text-amber-800' : 'bg-gray-100 text-gray-500 hover:bg-amber-100 hover:text-amber-700'}`}
+                                        title="แก้ไขงาน"
+                                    >
+                                        <Edit className="h-3.5 w-3.5" />
+                                    </button>
+
+                                    <label className="flex items-center gap-1.5 cursor-pointer group bg-gray-50 p-1.5 rounded-md border border-gray-200 hover:bg-blue-50 transition-colors">
+                                        <input 
+                                        type="checkbox" 
+                                        checked={booking.isCleared}
+                                        onChange={() => toggleClearStatus(booking)}
+                                        className="w-4 h-4 rounded text-green-600 focus:ring-green-500 border-gray-300 cursor-pointer"
+                                        />
+                                        <span className={`text-xs font-medium select-none hidden sm:inline ${booking.isCleared ? 'text-green-600' : 'text-gray-600 group-hover:text-blue-700'}`}>
+                                        {booking.isCleared ? 'เคลียร์แล้ว' : 'เคลียร์'}
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* 2. Info Ribbon (แถบรวมข้อมูล วันเวลา, รถ, งาน, ราคา) */}
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-gray-600 mb-2 bg-gray-50/80 p-1.5 rounded-md border border-gray-100/50">
+                                <span className="flex items-center gap-1 font-semibold text-blue-700">
                                     <Calendar className="h-3.5 w-3.5"/> 
-                                    {booking.date ? formatThaiDateShort(booking.date) : 'ไม่ระบุวันที่'} {booking.time ? `(เวลา ${formatTimeAMPM(booking.time)})` : ''}
-                                    </span>
-                                    <span className="flex items-center gap-1"><Car className="h-3.5 w-3.5"/> {getShortVehicleName(booking.vehicleType)}</span>
-                                </div>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                <button 
-                                    onClick={() => handleEdit(booking)} 
-                                    className={`p-2 rounded-lg transition-colors ${editingId === booking.id ? 'bg-amber-200 text-amber-800' : 'bg-gray-100 text-gray-500 hover:bg-amber-100 hover:text-amber-700'}`}
-                                    title="แก้ไขงาน"
-                                >
-                                    <Edit className="h-4 w-4" />
-                                </button>
-
-                                <label className="flex items-center gap-2 cursor-pointer group bg-gray-50 p-2 rounded-lg border border-gray-200 hover:bg-blue-50 transition-colors">
-                                    <input 
-                                    type="checkbox" 
-                                    checked={booking.isCleared}
-                                    onChange={() => toggleClearStatus(booking)}
-                                    className="w-5 h-5 rounded text-green-600 focus:ring-green-500 border-gray-300 cursor-pointer"
-                                    />
-                                    <span className={`text-sm font-medium select-none hidden sm:inline ${booking.isCleared ? 'text-green-600' : 'text-gray-600 group-hover:text-blue-700'}`}>
-                                    {booking.isCleared ? 'เคลียร์แล้ว' : 'ติ๊กเมื่อเคลียร์'}
-                                    </span>
-                                </label>
-                                </div>
-                            </div>
-
-                            {/* Card Body - Route & Details */}
-                            <div className="space-y-2 mb-3">
-                                <div className="flex items-start gap-2">
-                                <div className="mt-0.5"><MapPin className="h-4 w-4 text-green-600" /></div>
-                                <div className="text-sm">
-                                    <span className="text-gray-500 text-xs block">รับจาก (Pickup)</span>
-                                    <span className="font-medium text-gray-800">
-                                    {booking.pickup} {booking.roomNumber && <span className="text-gray-500 font-normal ml-1">/ {booking.roomNumber}</span>}
-                                    </span>
-                                </div>
-                                </div>
-                                <div className="flex items-start gap-2">
-                                <div className="mt-0.5"><Navigation className="h-4 w-4 text-red-600" /></div>
-                                <div className="text-sm">
-                                    <span className="text-gray-500 text-xs block">ส่งที่ (Dropoff)</span>
-                                    <span className="font-medium text-gray-800">{booking.dropoff}</span>
-                                </div>
-                                </div>
-                            </div>
-
-                            {/* Card Footer - Price & Conditions */}
-                            <div className="bg-gray-50 rounded-lg p-3 text-sm grid grid-cols-1 sm:grid-cols-2 gap-2 border border-gray-100">
-                                <div>
-                                <span className="text-gray-500 text-xs block mb-0.5">ประเภทงาน</span>
-                                <span className="font-medium">
+                                    {booking.date ? formatThaiDateShort(booking.date) : 'ไม่ระบุ'} {booking.time ? formatTimeAMPM(booking.time) : ''}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <Car className="h-3.5 w-3.5 text-gray-500"/> 
+                                    {getShortVehicleName(booking.vehicleType)}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <Briefcase className="h-3.5 w-3.5 text-gray-500"/>
                                     {booking.jobType.split('(')[0].trim()}
                                     {booking.jobType.includes('สนามบิน') && booking.flightType && (
-                                    <span className="text-blue-600 ml-1">({booking.flightType})</span>
+                                        <span className="text-blue-600">({booking.flightType})</span>
                                     )}
                                 </span>
-                                </div>
-                                <div>
-                                <span className="text-gray-500 text-xs block mb-0.5">ค่างาน</span>
-                                <span className="font-bold text-blue-700">{booking.price ? `${Number(booking.price).toLocaleString()} บาท` : 'ไม่ระบุ'}</span>
-                                </div>
-                                {booking.conditions && (
-                                <div className="sm:col-span-2 mt-1 pt-2 border-t border-gray-200">
-                                    <span className="text-gray-500 text-xs block mb-0.5">โน๊ต</span>
-                                    <span className="text-amber-700 font-medium">{booking.conditions}</span>
-                                </div>
+                                {booking.price && (
+                                    <span className="flex items-center gap-1 font-bold text-green-700 ml-auto">
+                                        <DollarSign className="h-3.5 w-3.5"/> {Number(booking.price).toLocaleString()} ฿
+                                    </span>
                                 )}
                             </div>
+
+                            {/* 3. Route Row (เส้นทาง รับ ➔ ส่ง) */}
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm">
+                                <div className="flex items-start gap-1.5 flex-1">
+                                    <MapPin className="h-4 w-4 text-green-600 mt-0.5 sm:mt-0 shrink-0" />
+                                    <span className="font-medium text-gray-800 leading-snug">
+                                        {booking.pickup} {booking.roomNumber && <span className="text-gray-500 font-normal">/ {booking.roomNumber}</span>}
+                                    </span>
+                                </div>
+                                <div className="hidden sm:flex text-gray-300 items-center justify-center px-1">
+                                    <ArrowRight className="h-4 w-4" />
+                                </div>
+                                <div className="flex items-start gap-1.5 flex-1">
+                                    <Navigation className="h-4 w-4 text-red-600 mt-0.5 sm:mt-0 shrink-0" />
+                                    <span className="font-medium text-gray-800 leading-snug">{booking.dropoff}</span>
+                                </div>
+                            </div>
+
+                            {/* 4. Notes Row (ถ้ามีโน๊ต) */}
+                            {booking.conditions && (
+                                <div className="mt-2 pt-2 border-t border-gray-100 flex items-start gap-1.5 text-xs">
+                                    <FileText className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+                                    <span className="text-amber-700 font-medium leading-snug">{booking.conditions}</span>
+                                </div>
+                            )}
 
                             </div>
                         ))
